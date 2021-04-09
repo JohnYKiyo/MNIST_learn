@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
 
-import resnet
+import cnn
 import dataloader
 import argparse
 
@@ -78,26 +78,27 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', '-G', default=0.95)
     args = parser.parse_args()
     print(args)
-    
-    
+
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = resnet.ResNet18(num_classes=10)
+    model = cnn.model(num_blocks=[1,1,1], num_channels=1,num_classes=10)
     model = model.to(device)
     CELoss = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     best_acc = 0
-    
-    train_loss_list = []
-    test_loss_list = []
-    acc_list = []
-    for epoch in range(int(args.epoch)):
-        _,train_loss = train(epoch, model, dataloader.trainloader)
-        _,test_loss, acc = test(epoch, model, dataloader.testloader)
-        scheduler.step()
-        train_loss_list.append(train_loss)
-        test_loss_list.append(test_loss)
-        acc_list.append(acc)
+
+    N=int(args.epoch)
+    with tqdm(total=N) as pbar:
+        for epoch in range(N):
+            _,train_loss = train(epoch, model, dataloader.trainloader)
+            _,test_loss, acc = test(epoch, model, dataloader.testloader)
+            scheduler.step()
+            train_loss_list.append(train_loss)
+            test_loss_list.append(test_loss)
+            acc_list.append(acc)
+            pbar.set_postfix_str(s=f'acc:{acc}')
+            pbar.update()
 
 
     with open('train_log.txt', 'w') as f:
