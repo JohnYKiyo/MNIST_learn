@@ -117,5 +117,5 @@ if __name__ == '__main__':
 
     with open('acc_log.txt', 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(l)
+        writer.writerow(acc_list)
 
