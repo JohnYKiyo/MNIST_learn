@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import os
+import csv
 from tqdm import tqdm
 
 
@@ -49,7 +50,7 @@ def test(epoch, model, testloader):
             batch_test_loss.append(loss.item())
             
             _, predicted = torch.max(outputs, axis=1)
-            batch_correct.append(predicted.eq(targets).numpy())
+            batch_correct.append(predicted.eq(targets).cpu().numpy())
     
     batch_correct = np.array(batch_correct)
     correct = batch_correct.sum()
@@ -88,6 +89,9 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
     best_acc = 0
 
+    train_loss_list = []
+    test_loss_list = []
+    acc_list = []
     N=int(args.epoch)
     with tqdm(total=N) as pbar:
         for epoch in range(N):
@@ -102,11 +106,16 @@ if __name__ == '__main__':
 
 
     with open('train_log.txt', 'w') as f:
-        f.writelines(train_loss_list)
-    
+        writer = csv.writer(f)
+        for l in train_loss_list:
+            writer.writerow(l)
+
     with open('test_log.txt', 'w') as f:
-        f.writelines(test_loss_list)
-    
+        writer = csv.writer(f)
+        for l in test_loss_list:
+            writer.writerow(l)
+
     with open('acc_log.txt', 'w') as f:
-        f.writelines(acc_list)
+        writer = csv.writer(f)
+        writer.writerow(l)
 
